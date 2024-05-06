@@ -1,0 +1,60 @@
+participantspacing equal
+
+database "Our program" as Program
+database "Certification Authority" as Authority
+actor "Auditor" as Auditor
+actor "Provider" as Provider
+==Церемонія==
+
+note over Provider:
+    • перетворює функцію на QAP , отримуючи наступні значення:
+        ◦ m – загальна кількість змінних QAP. Дорівнює кількості змінних свідчення;
+        ◦ N – змінні верифікатора;
+        ◦ d – степінь многочленів операндів. Дорівнює кількості операцій множення;
+        ◦  – індекси усіх змінних;
+        ◦  – індекси змінних верифікатора;
+        ◦  – індекси змінних прувера;
+        ◦  – індекси операцій;
+        ◦  – загальновідомий многочлен;
+        ◦  – многочлени змінних для усіх трьох операндів.
+    • робить значення змінних  загальнодоступними;
+    • задає  – функцію криптографічних пар і  – генератор;
+    • генерує випадкові , , , , , , , , і задає , , , ;
+    • обчислює зашифроване ;
+    • обчислює зашифровані степені ;
+    • обчислює многочлени змінних прувера на  –  і їх -множники ;
+    • відправляє пруверу його ключа:
+;
+    • а верифікатору його ключа:
+
+==Begin the audit==
+Program-->Auditor://A//
+rbox over Auditor: Select //U// from //A//
+Auditor->Provider://U//
+==Provider's actions==
+loop #2f2e7b u in U
+rbox over Provider: Generate the zk proof //Pr//:\n    Public inputs: //u, K, H(salt)//.\n    Private inputs: //SOD, S_--k--(SOD), salt, H(DG2)//
+#$H(salt_p) == H(salt)_p$
+#$H(DG2)_p \in SOD_p$
+#$u_p == H(salt || H(DG2))_p$
+#$V_K(S_k(SOD)_p) == true$
+end
+loop #2f2e7b u in U
+Provider-->Auditor: //Pr, DSC, E// 
+destroysilent Provider
+end
+==Verification==
+create Authority
+Authority-->Auditor://C_--CSCA--//
+destroysilent Authority
+Program-->Auditor://H(salt)//
+destroysilent Program
+loop #2f2e7b u in U
+rbox over Auditor:Extract K from the DSC//
+rbox over Auditor:Check that //ZKV(Pr, {u, K, H(salt)}) == true//
+rbox over Auditor:Validate the //DSC//:\n    check that the //DSC//'s signer is a trusted //C_--CSCA--//;\n    //verifies the //DSC//'s signature: Verify_Cert(DSC,C_--CSCA--) == true//;\n    check the expiration date and the revocation status of the //DSC//.
+rbox over Auditor:Validate //E//
+end
+rbox over Auditor:Come to a conclusion regarding the validity of the Provider's actions
+destroysilent Auditor
+==End of the audit==
