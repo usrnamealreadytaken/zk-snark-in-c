@@ -19,10 +19,10 @@ enum {
 
 typedef const unsigned int degree;
 
-// contains provers evaluations at s
+// contains provers evaluations at τ
 typedef element_t (*crypted)[length];
 // encrypted is a pointer to an element pointer array
-// conventionally, contains evaluations of lroz subpolynomials at s
+// conventionally, contains evaluations of lroz subpolynomials at τ
 typedef element_t *((*encrypted)[length]);
 // the matrix of operand subpolynomials
 typedef long long matrix[length][operations];
@@ -39,14 +39,17 @@ typedef struct s_degrees {
 } Degrees;
 
 typedef struct s_proving {
-    element_t **enc_tau; // right
+    // Pinocchio
+    element_t **enc_tau;
     encrypted subpolynomials;
     encrypted shifted;
     long long **t;
     const subpolynomials lro;
-    // new
+    // Groth16
     element_t *enc_alpha;    // alpha
     element_t *enc_beta;     // beta
+    element_t *enc_gamma;    // gamma
+    element_t *enc_delta;    // delta
     element_t **enc_tau_new; // x
     /* (bu(tau)+av(tau)+w(tau))/rho in l+1 to m*/
     crypted prover_lro_evaluations;
@@ -57,10 +60,17 @@ typedef struct s_proving {
 } Proving;
 
 typedef struct s_verification {
+    // Pinocchio
     encrypted subpolynomials_v;
     long long to;
     const int beta;
     element_t **enc_alphas;
+
+    // Groth16
+    element_t *enc_beta;
+    element_t *enc_gamma;
+    element_t *enc_delta;
+    element_t **enc_tau;
 } Verification;
 
 typedef struct s_setup {

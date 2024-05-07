@@ -15,8 +15,9 @@ static const long long delta_o = 5;
 static const long long deltas[3] = {delta_l, delta_r, delta_o}; // δ - shifts
 
 static const long long u_alpha = 2;                 // α
-static const long long u_gamma = 6;                 // γ
 static const long long u_beta = 7;                  // β - shifts
+static const long long u_gamma = 6;                 // γ
+static const long long u_delta = 4;                 // δ
 static const long long ro_l = 4;                    // ρl
 static const long long ro_r = 3;                    // ρr
 static const long long ro_o = ro_l * ro_r;          // ρo

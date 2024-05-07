@@ -79,26 +79,57 @@ Setup setup(Degrees degrees) {
     element_t **enc_alphas = malloc(sizeof(element_t *) * 3);
     ForLRO enc_alphas[i] = encrypt(alphas[i]);
 
-    printf("\033[0;30m"); // Hide the text
-    element_t *enc_alpha = encrypt(u_alpha);
-    element_t *enc_beta = encrypt(u_beta);
+    /**
+     * The Groth16 protocol
+     * (σ,τ) <= Setup(R): Pick α,β,γ,δ,x <= Z^∗_p.Define τ = (α,β,γ,δ,x) and
+     * compute σ = ([σ_1]_1, [σ_2]_2), where
+     *
+     * τ is the toxic waste - tau ceremony
+     *
+     * σ_1 = (( α, β, δ, {x^i}^{n−1}_{i=0},
+     * { (βu_i(x)+αv_i(x)+w_i(x))/γ }^l_{i=0},
+     * { (βu_i(x)+αv_i(x)+w_i(x))/δ }^m_{i=l+1},
+     * { x^i*t(x)/δ }^{n−2}_{i=0} ))
+     * is the proving key
+     *
+     * σ_2 = (( β, γ, δ, {x^i}^{n−1}_{i=0} ))
+     * is the verification key
+     */
+    printf("\033[0;30m");
+
+    element_t *enc_alpha = encrypt(u_alpha); // α
+    element_t *enc_beta = encrypt(u_beta);   // β
+    element_t *enc_gamma = encrypt(u_gamma); // γ
+    element_t *enc_delta = encrypt(u_delta); // δ
     crypted prover_lro_evaluations = Provers(lro);
     printf("\033[0;37m"); // Show the text
 
     Setup keys = {{
+                      // Pinocchio
                       .enc_tau = encrypted_taus,
                       .subpolynomials = subpolynomials_p,
                       .shifted = shifts,
                       .t = T,
                       .lro = lro,
-                      // split
+                      // Groth16
                       .enc_alpha = enc_alpha,
                       .enc_beta = enc_beta,
+                      .enc_gamma = enc_gamma,
+                      .enc_delta = enc_delta,
                       .enc_tau_new = encrypted_taus,
                       .prover_lro_evaluations = prover_lro_evaluations,
                       .verifier_lro_evaluations = *subpolynomials_v,
                       .trho = *subpolynomials_v,
                   },
-                  {subpolynomials_v, T[0][2], beta, enc_alphas}};
+                  {// Pinocchio
+                   .subpolynomials_v = subpolynomials_v,
+                   .to = T[0][2],
+                   .beta = beta,
+                   .enc_alphas = enc_alphas,
+                   // Groth16
+                   .enc_beta = enc_beta,
+                   .enc_gamma = enc_gamma,
+                   .enc_delta = enc_delta,
+                   .enc_tau = encrypted_taus}};
     return keys;
 }
